@@ -75,7 +75,7 @@
 
 ## 3. 原始数据与 10 分钟汇总
 
-**原始文件：** [`raw_data/20261015_CP13_放电原始数据.csv`](../raw_data/20261015_CP13_放电原始数据.csv)
+**原始文件：** [`raw_data/20261015_CP13_放电原始数据.csv`](raw_data/20261015_CP13_放电原始数据.csv)
 —— **7421 行，1 Hz，总时长 7420 s（123.7 min）**，GB18030 编码。
 
 **10 分钟分档表：** [`analysis/10min_sampling.csv`](analysis/10min_sampling.csv)（由脚本自动生成）
