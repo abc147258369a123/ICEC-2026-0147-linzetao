@@ -45,12 +45,17 @@ const uint32_t PRINT_EVERY  = 5;       // 每 5 个采样点（0.5 s）打印一
 const float  STEP_MIN_A     = 0.30f;   // 判定为「负载阶跃」的最小电流变化
 const uint8_t RING          = 5;       // 平滑窗口
 const uint8_t R_MED_N       = 9;       // 内阻中值滤波长度
-// TODO(林泽涛)：拆机后测一只健康电芯的内阻填进来，SOH_R 才有意义
-const float  R_NOMINAL_MOHM = 60.0f;   // mΩ，新电池参考内阻
+// TODO(林泽涛)：拆机后对健康电芯组做一次阶跃测试，把实测内阻填进来；
+// 在填之前 SOH_R 只是占位换算，不能当结论。
+// 注意：本机电芯组是 2S（7.3 V）串联，整组内阻约为单节的 2 倍，
+// 2S 组典型区间约 100~180 mΩ，故先按 140 mΩ 占位。
+const float  R_NOMINAL_MOHM = 140.0f;  // mΩ，健康 2S 电芯组参考内阻
 
-// 容量
-const float  CAP_NOMINAL_AH = 10.0f;   // 标称 10000 mAh
-// TODO：确认 CP13 是 1S 还是 2S；2S 时电芯容量要按串并联折算
+// 容量（已按铭牌核实）
+//   铭牌：电池能量（额定/典型）35.77 Wh / 36.5 Wh
+//   电池组：7.3 V  4900 mAh（额定）/ 5000 mAh（典型） → 2S 串联
+const float  CAP_NOMINAL_AH = 4.90f;   // 整组额定 4900 mAh（串联时容量不叠加）
+const float  CELL_V_NOMINAL = 7.3f;    // 2S 标称电压
 
 // ============================================================ INA219 寄存器
 static const uint8_t REG_CONFIG = 0x00;

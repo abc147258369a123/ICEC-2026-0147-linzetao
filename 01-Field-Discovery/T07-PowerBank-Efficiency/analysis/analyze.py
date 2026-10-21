@@ -40,12 +40,23 @@ RAW = os.path.join(HERE, "..", "raw_data", "20261015_CP13_放电原始数据.csv
 OUT = HERE
 
 # ---------------------------------------------------------------- 铭牌参数
-# TODO(林泽涛)：请对照充电宝铭牌照片核实这两个值，并替换下面的数字。
-# CP13 标称 10000 mAh；额定能量按 10000mAh × 3.7V 计约 37 Wh。
-# 若铭牌上印的是 35Wh 或其它值，以铭牌为准，改这一行即可。
-CELL_NOMINAL_MAH = 10000.0
-CELL_NOMINAL_V = 3.7
-NAMEPLATE_WH = CELL_NOMINAL_MAH / 1000.0 * CELL_NOMINAL_V  # = 37.0 Wh
+# 已按实物铭牌核实（照片：raw_data/20261015_nameplate_01.jpg）
+#
+#   CUKTECH CP13 电能块（口袋版）   型号 PB100
+#   电池能量（额定/典型）：35.77 Wh / 36.5 Wh
+#   电池组：7.3 V  4900 mAh（额定）/ 5000 mAh（典型）  → 2S 串联结构
+#   额定容量：5600 mAh（5V⎓3A）
+#   OUT1(Type-C)：5V⎓3A  9V⎓3A  12V⎓2.5A   30W MAX
+#
+# ⚠️ 7.3 V 是 2S 标称电压。所以输出 9 V 时升压比只有 9/7.3 ≈ 1.23×，
+#    输出 5 V 时反而是「降压」。这与最初按 1S 假设写的「升压比 2.4×」完全不同，
+#    原报告相应结论已更正——这一处若被面试追问会很致命。
+CELL_NOMINAL_MAH = 4900.0    # 额定（2S 串联，整组容量 = 单节容量）
+CELL_NOMINAL_V = 7.3         # 2S 标称电压
+NAMEPLATE_WH = 35.77         # 额定能量（铭牌）
+TYPICAL_WH = 36.5            # 典型能量（铭牌）
+RATED_OUT_MAH_5V = 5600.0    # 额定输出容量 @5V⎓3A
+BOOST_RATIO_9V = 9.0 / CELL_NOMINAL_V   # ≈ 1.233×，不是 2.4×
 
 CURRENT_THRESHOLD_A = 0.05   # 判定有效放电的电流门限
 BIN_MINUTES = 10             # 考核要求的记录间隔
@@ -162,6 +173,16 @@ def compute(df):
     m["eta_meter"] = meter_E / NAMEPLATE_WH * 100.0
     m["eta_gap"] = m["eta_meter"] - m["eta"]
     m["q_ratio"] = meter_Q / Q_out
+
+    # ---- 按铭牌「典型能量」与「额定输出容量」再算一组对照
+    m["typical_wh"] = TYPICAL_WH
+    m["eta_typical"] = E_out / TYPICAL_WH * 100.0
+    m["eta_meter_typical"] = meter_E / TYPICAL_WH * 100.0
+    m["rated_out_wh_5v"] = RATED_OUT_MAH_5V / 1000.0 * 5.0
+    m["q5v_vs_rated_pct"] = m["q5v_mah"] / RATED_OUT_MAH_5V * 100.0
+    m["boost_ratio"] = BOOST_RATIO_9V
+    m["cell_v"] = CELL_NOMINAL_V
+    m["cell_mah"] = CELL_NOMINAL_MAH
     # 电流双电平间距（用于解释采样偏差量级）
     seg_i = seg["I"].to_numpy()
     q25, q75 = np.percentile(seg_i, 25), np.percentile(seg_i, 75)
@@ -279,10 +300,10 @@ def fig3(df, seg, m):
     ]
     fig = Figure(1500, 850,
                  title="图 3  能量损失拆解（从标称能量到实测可用能量）",
-                 subtitle=f"标称 10000 mAh × 3.7 V = {m['nameplate_wh']:.1f} Wh"
+                 subtitle=f"铭牌额定 {m['nameplate_wh']:.2f} Wh（2S 7.3 V / {m['cell_mah']:.0f} mAh）"
                           f"  →  实测输出 {m['E_out']:.3f} Wh"
                           f"  →  放电效率 {m['eta']:.1f}%",
-                 footer="注意：标称能量需以铭牌照片核实，替换 analyze.py 中的 NAMEPLATE_WH")
+                 footer="铭牌已核实：raw_data/20261015_nameplate_01.jpg（PB100 / 额定 35.77 Wh / 典型 36.5 Wh / 2S 7.3 V 4900 mAh）")
 
     p = fig.panel((0.10, 0.28, 0.88, 0.86),
                   xlim=(-0.6, len(items) - 0.4),
@@ -365,15 +386,33 @@ def write_metrics(m, bins):
     A(f"| 电压范围 | {m['V_min']:.3f} – {m['V_max']:.3f} V |")
     A("")
 
-    A("## 四、转换效率\n")
-    A(f"- 标称能量（10000 mAh × 3.7 V）：**{m['nameplate_wh']:.2f} Wh** ⚠️ 待铭牌核实")
+    A("## 四、转换效率（已按铭牌核实）\n")
+    A(f"- 铭牌额定能量：**{m['nameplate_wh']:.2f} Wh**（2S 结构：{m['cell_v']:.1f} V / "
+      f"{m['cell_mah']:.0f} mAh）")
+    A(f"- 铭牌典型能量：{m['typical_wh']:.2f} Wh")
     A(f"- 实测输出能量（重积分）：**{m['E_out']:.4f} Wh**")
     A(f"- 实测输出能量（仪表终值）：{m['meter_E']:.4f} Wh")
-    A(f"- **放电转换效率（重积分口径）η = {m['eta']:.2f}%**")
-    A(f"- 放电转换效率（仪表口径）η = {m['eta_meter']:.2f}%")
-    A(f"- **结论取值区间：{min(m['eta'], m['eta_meter']):.2f}% ~ "
-      f"{max(m['eta'], m['eta_meter']):.2f}%**（见第五节，两个口径不可互相替代）")
-    A(f"- 损失能量：{m['loss_wh']:.4f} Wh\n")
+    A("")
+    A("| 口径 | 相对额定 35.77 Wh | 相对典型 36.5 Wh |")
+    A("| --- | --- | --- |")
+    A(f"| 逐秒重积分 {m['E_out']:.4f} Wh | **{m['eta']:.2f}%** | {m['eta_typical']:.2f}% |")
+    A(f"| 仪表终值 {m['meter_E']:.4f} Wh | {m['eta_meter']:.2f}% | {m['eta_meter_typical']:.2f}% |")
+    A("")
+    A(f"- **效率区间：{min(m['eta'], m['eta_meter']):.2f}% ~ "
+      f"{max(m['eta'], m['eta_meter']):.2f}%**（相对额定能量）")
+    A(f"- 损失能量：{m['loss_wh']:.4f} Wh")
+    A("")
+    A("### 输出容量与铭牌额定输出容量的对照\n")
+    A(f"- 铭牌额定输出容量：{m['rated_out_wh_5v'] / 5 * 1000:.0f} mAh @5V⎓3A"
+      f"（= {m['rated_out_wh_5v']:.1f} Wh）")
+    A(f"- 本次 5 V 等效输出：{m['q5v_mah']:.0f} mAh"
+      f"（= {m['q5v_mah'] / 1000 * 5:.2f} Wh）")
+    A(f"- **占额定输出容量的 {m['q5v_vs_rated_pct']:.1f}%**")
+    A("")
+    A(f"> 注意：本次测试跑在 **9 V 档**（升压比 9/7.3 ≈ {m['boost_ratio']:.2f}×），"
+      f"而铭牌额定容量 5600 mAh 的标定条件是 **5 V⎓3A（降压档）**。")
+    A("> 两者工况不同，不能直接等同于「超标」或「不达标」，只能作为量级对照。")
+    A("")
 
     A("## 五、数据异常与归因（重点，面试会追问）\n")
     A(f"**现象：** 用逐秒 `V × I × Δt` 积分得到 {m['E_out']:.4f} Wh / {m['Q_out']:.4f} Ah，"
@@ -413,12 +452,20 @@ def write_metrics(m, bins):
     for _, r in bins.iterrows():
         A("| " + " | ".join(str(r[c]) for c in cols) + " |")
     A("")
-    A("## 七、待核实项\n")
-    A("1. **标称额定能量**：需充电宝铭牌照片确认（本脚本按 37 Wh 计）。")
-    A("2. **截止电压 2.17 V 的含义**：这是**功率计在输出口测到的母线残压**，"
-      "不是电芯电压。电芯真实截止电压需拆机后用万用表在 `BAT+`/`BAT-` 上测量。")
-    A("3. **电芯串并结构**：CP13 是 1S 还是 2S，决定了 9 V 输出时的升压比与效率预期。"
-      "此问题只能在项目五拆解中回答。")
+    A("## 七、已核实项与仍待核实项\n")
+    A("### 已由铭牌照片核实（`raw_data/20261015_nameplate_01.jpg`）\n")
+    A(f"- 型号 **PB100**，电池能量（额定/典型）**35.77 Wh / 36.5 Wh**")
+    A(f"- 电池组 **7.3 V / 4900 mAh（额定）** → **2S 串联结构**")
+    A("- 额定输出容量 **5600 mAh（5V⎓3A）**")
+    A(f"- 由此确认：9 V 输出时升压比约 **{m['boost_ratio']:.2f}×**（不是早期假设的 2.4×）")
+    A("")
+    A("### 仍待核实\n")
+    A("1. **截止电压 2.15 V 的含义**：这是**功率计在输出口测到的母线残压**，"
+      "不是电芯组电压。2S 电芯组的真实截止电压（预期 6.0 V 左右）"
+      "需拆机后用万用表在 `BAT+`/`BAT-` 上测量。")
+    A("2. **实测内阻**：本课题未测。需拆机后在电芯组端子做负载阶跃测试。")
+    A("3. **30 min 处功率阶跃的原因**：需查升压芯片型号与限流/温控策略，"
+      "属项目五拆解范围。")
     txt = "\n".join(lines)
     with io.open(os.path.join(OUT, "metrics.md"), "w", encoding="utf-8") as f:
         f.write(txt)
@@ -455,7 +502,11 @@ def main():
     print(f"输出能量 {m['E_out']:.4f} Wh  (仪表终值 {m['meter_E']:.4f}, 偏差 {m['E_diff_pct']:+.2f}%)")
     print(f"输出容量 {m['Q_out']:.4f} Ah  → 5V 等效 {m['q5v_mah']:.0f} mAh")
     print(f"平均功率 {m['P_mean']:.2f} W, 峰值 {m['P_max']:.2f} W")
-    print(f"放电效率 {m['eta']:.2f}% (重积分) / {m['eta_meter']:.2f}% (仪表口径), 标称 {m['nameplate_wh']:.1f} Wh")
+    print(f"放电效率 {m['eta']:.2f}% (重积分) / {m['eta_meter']:.2f}% (仪表), "
+          f"额定 {m['nameplate_wh']:.2f} Wh / 典型 {m['typical_wh']:.1f} Wh")
+    print(f"5V 等效 {m['q5v_mah']:.0f} mAh, 占铭牌额定输出 {m['q5v_vs_rated_pct']:.1f}%")
+    print(f"电芯结构 {m['cell_v']:.1f}V/{m['cell_mah']:.0f}mAh (2S), "
+          f"9V 升压比 {m['boost_ratio']:.2f}x")
 
 
 if __name__ == "__main__":
