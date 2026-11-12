@@ -21,15 +21,15 @@ ICEC 考核大纲对第二阶段有一条**准入条件**（不是加分项）�
 
 交互模式（适合边做边记）：
 
-    python tools/field_log.py
+    python 工具/field_log.py
 
 单条模式（适合快速记一条）：
 
-    python tools/field_log.py "拆下后盖，4 个卡扣" -c teardown -v 4 -u pcs
+    python 工具/field_log.py "拆下后盖，4 个卡扣" -c teardown -v 4 -u pcs
 
 失败记录（很重要，别跳过）：
 
-    python tools/field_log.py "VIN 对地阻值异常" -c measure -v 1.2 -u Mohm -s suspect
+    python 工具/field_log.py "VIN 对地阻值异常" -c measure -v 1.2 -u Mohm -s suspect
 
 ## 输出
 

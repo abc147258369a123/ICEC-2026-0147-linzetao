@@ -25,7 +25,7 @@
 ### 记一条
 
 ```bash
-python tools/field_log.py
+python 工具/field_log.py
 ```
 
 会依次问：类别 → 事件 → 数值 → 单位 → 状态 → 备注，回车即落盘。
