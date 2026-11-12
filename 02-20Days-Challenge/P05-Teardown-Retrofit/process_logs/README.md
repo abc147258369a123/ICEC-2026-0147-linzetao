@@ -34,7 +34,7 @@ python tools/field_log.py
 
 ```bash
 git add .
-git commit -m "day07: 完成 U1 丝印溯源，确认 IP5306 方案"
+git commit -m "day07: 完成 U1 丝印溯源，确认充电管理 IC 型号"
 git push
 ```
 
@@ -71,7 +71,7 @@ git push
 2026-10-23 14:32:11,teardown,拆下后盖，4 个卡扣,4,pcs,ok,
 2026-10-23 15:10:03,measure,VIN 对地阻值,1.2,Mohm,suspect,与预期 8M 差太多
 2026-10-23 15:41:20,debug,换表笔复测，阻值恢复正常,8.6,Mohm,ok,前一次是表笔接触不良
-2026-10-24 09:15:32,measure,U1 丝印,IP5306,,-,ok,放大镜+手机微距拍摄
+2026-10-24 09:15:32,measure,U1 丝印字符,待填,,-,ok,放大镜+手机微距拍摄，随后查 datasheet 核对
 2026-10-25 16:02:44,poweron,改造板首次上电，串口输出正常,-,-,ok,INA219 读到 3.87V
 2026-10-25 16:20:10,poweron,负载接入后复位,-,-,fail,疑似供电不足，待查
 ```
