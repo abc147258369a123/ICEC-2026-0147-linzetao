@@ -1,0 +1,9 @@
+# 课题 07 分析管线依赖
+# 用法：python -m pip install -r requirements.txt
+#
+# 说明：绘图没有用 matplotlib，而是用 analysis/plotlib.py 手写实现
+#      （仅依赖 Pillow），原因见 03-AI-Collaboration/prompts/20261015_课题07分析管线.md
+
+numpy>=1.26
+pandas>=2.0
+Pillow>=10.0
