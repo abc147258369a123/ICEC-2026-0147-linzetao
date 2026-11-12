@@ -83,7 +83,8 @@ Windows 上：右键图片 → **属性** → **详细信息** 标签页
 照片放进本目录后：
 
 ```powershell
-cd "E:\Users\LIN\Documents\deepseek-harness\default-workspace\ICEC-2026-0147-linzetao"
+# 先进入仓库根目录（最简单的方式：在资源管理器打开仓库文件夹，地址栏输入 powershell 回车）
+cd "你的仓库文件夹"
 
 git status                       # 确认照片在里面
 git add 01-Field-Discovery/T07-PowerBank-Efficiency/raw_data/
