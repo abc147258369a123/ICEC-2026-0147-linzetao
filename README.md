@@ -15,7 +15,7 @@
 
 ---
 
-## 一、我是谁（About Me）
+## 一、自我介绍
 
 我是林泽涛，17 岁，现就读于深圳技师学院新能源汽车检测与维修专业，
 未来希望从事电子硬件、智能硬件相关工作。
@@ -59,7 +59,7 @@
 | 阶段 | 选题 | 权重 | 交付目录 |
 | --- | --- | --- | --- |
 | Stage 1 | 课题 07：充电宝/充电器标称容量与转换效率核验 | 20 分（与第二项合计） | [`01-Field-Discovery/T07-PowerBank-Efficiency/`](01-Field-Discovery/T07-PowerBank-Efficiency/) |
-| Stage 1 | 第二项课题：（待定，见下方决策） | 20 分（与课题 07 合计） | `01-Field-Discovery/` |
+| Stage 1 | 课题 08：多姿态步态加速度特征采集与对比 | 20 分（与课题 07 合计） | [`01-Field-Discovery/T08-步态加速度特征采集/`](01-Field-Discovery/T08-步态加速度特征采集/) |
 | Stage 2 | 项目五：旧电器拆解逆向、BOM 成本还原与智能化升级 | 60 分 | [`02-20Days-Challenge/P05-Teardown-Retrofit/`](02-20Days-Challenge/P05-Teardown-Retrofit/) |
 | Stage 3 | 12 分钟 AI 深度面试 | 20 分 | 基于本仓库全部提交动态追问 |
 
@@ -89,10 +89,10 @@ ICEC-2026-0147-linzetao/
 │   │   ├── raw_data/              # 原始实测数据（CSV / 仪器照片）
 │   │   ├── analysis/              # 分析脚本与图表
 │   │   └── REPORT.md              # 分析报告
-│   └── T05-Ergonomics/            # 第二项课题（目录待最终确认后改名）
-│       ├── raw_data/
-│       ├── analysis/
-│       └── REPORT.md
+│   └── T08-步态加速度特征采集/     # 课题 08：多姿态步态加速度特征采集与对比
+│       ├── raw_data/               # phyphox 原始导出 + 现场同框照片
+│       ├── analysis/               # 5 张波形图
+│       └── REPORT.md               # 分析报告
 ├── 02-20Days-Challenge/           # 【阶段二】工坊开放式项目挑战 · 60 分
 │   └── P05-Teardown-Retrofit/     # 项目五：单节 18650 充电器拆解 + BOM 还原 + 智能改造
 │       ├── 01-爆炸拆解图谱与分步照片/   # ①《实物爆炸拆解图谱》与分步照片  15 分
